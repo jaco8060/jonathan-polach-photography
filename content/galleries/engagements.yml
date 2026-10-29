@@ -1,0 +1,20 @@
+title: Engagements
+description: Relaxed sessions before the big day.
+order: 2
+layout: masonry
+photos:
+  - file: sample-06.jpg
+    alt: Lilac sunset portrait
+    caption: Sunset session
+  - file: sample-07.jpg
+    alt: Couple walking through a brown field
+    caption: A walk in the field
+  - file: sample-08.jpg
+    alt: Teal water and sky
+    caption: By the lake
+  - file: sample-09.jpg
+    alt: Rust-colored autumn leaves
+    caption: Autumn leaves
+  - file: sample-10.jpg
+    alt: Black and white street portrait
+    caption: City evening

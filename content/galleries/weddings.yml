@@ -1,0 +1,20 @@
+title: Weddings
+description: Quiet moments and big celebrations from the weddings I've been lucky to photograph.
+order: 1
+cover: sample-03.jpg
+photos:
+  - file: sample-01.jpg
+    alt: Warm golden light behind a smiling couple
+    caption: Golden hour, first look
+  - file: sample-02.jpg
+    alt: Green leaves around a wedding arch
+    caption: The ceremony arch
+  - file: sample-03.jpg
+    alt: Pink and cream bouquet detail
+    caption: Bouquet details
+  - file: sample-04.jpg
+    alt: Blue evening sky over the reception
+    caption: Reception at dusk
+  - file: sample-05.jpg
+    alt: Amber candlelight on the dinner table
+    caption: Dinner by candlelight

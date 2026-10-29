@@ -1,0 +1,67 @@
+{
+  "name": "Jonathan Polach Photography",
+  "tagline": "Weddings and celebrations, photographed honestly.",
+  "description": "Wedding and event photographer. Natural, unhurried photographs of the people and moments that matter.",
+  "url": "",
+  "email": "hello@example.com",
+  "phone": "",
+  "location": "",
+  "instagram": "",
+  "preset": "warm-editorial",
+  "colors": {
+    "background": "",
+    "text": "",
+    "accent": ""
+  },
+  "fonts": "elegant-serif",
+  "layout": "justified",
+  "gutter": "normal",
+  "hero": {
+    "mode": "crossfade",
+    "images": [
+      "sample-01.jpg",
+      "sample-04.jpg",
+      "sample-03.jpg"
+    ]
+  },
+  "contact": {
+    "intro": "Tell me a little about your plans and I will reply within a couple of days.",
+    "method": "function",
+    "turnstileSiteKey": "",
+    "web3formsKey": "",
+    "formspreeId": "",
+    "shootTypes": [
+      "Wedding",
+      "Engagement",
+      "Elopement",
+      "Event",
+      "Other"
+    ]
+  },
+  "clients": {
+    "enabled": false
+  },
+  "home": {
+    "intro": "I photograph weddings and celebrations the way they actually feel: unhurried, warm, and a little bit wild. No stiff poses, just the people you love and the moments you'll want back.",
+    "process": [
+      {
+        "title": "Say hello",
+        "text": "Tell me your date and what you have in mind. I'll reply within a couple of days."
+      },
+      {
+        "title": "Plan together",
+        "text": "We'll talk through the day, the light, and the people who matter most to you."
+      },
+      {
+        "title": "Relax and enjoy",
+        "text": "I stay close and out of the way. Your full gallery arrives within four weeks."
+      }
+    ],
+    "testimonials": [
+      {
+        "quote": "We forgot he was even there, and somehow he caught every single moment we'd have missed.",
+        "name": "Sample client, edit me"
+      }
+    ]
+  }
+}

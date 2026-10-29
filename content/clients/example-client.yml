@@ -1,0 +1,10 @@
+# Private gallery. Only built when "Private client galleries" is turned on in Site settings.
+# Its address will be /clients/example-client/ (the file name). Pick a hard-to-guess file name per client.
+title: Example Client Wedding
+description: Your photos are ready. Thank you!
+note: Tap any photo to view it full size.
+order: 1
+photos:
+  - file: sample-10.jpg
+    alt: Sample client photo
+    caption: ""

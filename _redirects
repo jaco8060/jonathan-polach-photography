@@ -1,0 +1,4 @@
+# Old or alternate addresses. Format: from  to  status
+/gallery/*  /portfolio/:splat  301
+/galleries  /portfolio  301
+/pricing  /services  301

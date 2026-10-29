@@ -1,0 +1,204 @@
+# Pages CMS configuration (https://app.pagescms.org). Labels are written for a non-developer.
+media:
+  - name: photos
+    label: Photos
+    input: content/photos
+    output: /content/photos
+    extensions: [jpg, jpeg, png, webp]
+  - name: client-photos
+    label: Client photos (private)
+    input: content/client-photos
+    output: /content/client-photos
+    extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: site
+    label: Site settings
+    type: file
+    path: content/site.json
+    format: json
+    fields:
+      - { name: name, label: Business name, type: string }
+      - { name: tagline, label: Tagline, type: string, description: Shown over the home page photo. }
+      - { name: description, label: Short description, type: text, description: What Google shows under your site name. One or two sentences. }
+      - { name: url, label: Website address, type: string, description: "Leave blank until you have your own domain. Then type it in full, like https://www.yourname.com" }
+      - { name: email, label: Email address, type: string, description: Shown on the contact page and in the footer. }
+      - { name: phone, label: Phone, type: string }
+      - { name: location, label: Where you're based, type: string }
+      - { name: instagram, label: Instagram username, type: string }
+      - name: home
+        label: Home page text
+        type: object
+        fields:
+          - { name: intro, label: Introduction, type: text, description: A short, warm paragraph shown under the big photo. If blank, your short description is used. }
+          - name: process
+            label: "How it works (3 steps work best)"
+            type: object
+            list: true
+            fields:
+              - { name: title, label: Step title, type: string }
+              - { name: text, label: Step description, type: text }
+          - name: testimonials
+            label: Client testimonials
+            type: object
+            list: true
+            fields:
+              - { name: quote, label: What they said, type: text }
+              - { name: name, label: Their name, type: string }
+      - name: preset
+        label: Look
+        type: select
+        description: Choose a starting look. Colors below are optional and override it.
+        options:
+          values:
+            - { value: warm-editorial, label: Warm editorial }
+            - { value: light-gallery, label: Light gallery }
+            - { value: dark-gallery, label: Dark gallery }
+      - name: colors
+        label: Custom colors (optional)
+        type: object
+        description: Leave blank to use the look above. Type a color code such as #8c4a32.
+        fields:
+          - { name: background, label: Background, type: string }
+          - { name: text, label: Text, type: string }
+          - { name: accent, label: Accent (links and highlights), type: string }
+      - name: fonts
+        label: Fonts
+        type: select
+        options:
+          values:
+            - { value: elegant-serif, label: Elegant serif }
+            - { value: modern-sans, label: Modern sans }
+            - { value: classic, label: Classic }
+      - name: layout
+        label: Gallery layout
+        type: select
+        description: How photos are arranged. A single gallery can override this.
+        options:
+          values:
+            - { value: justified, label: Rows (default) }
+            - { value: masonry, label: Columns (good for upright photos) }
+            - { value: single, label: One big photo at a time (good for stories) }
+      - name: gutter
+        label: Space between photos
+        type: select
+        options:
+          values:
+            - { value: tight, label: Tight }
+            - { value: normal, label: Normal }
+            - { value: airy, label: Airy }
+      - name: hero
+        label: Home page photos
+        type: object
+        fields:
+          - name: mode
+            label: Style
+            type: select
+            options:
+              values:
+                - { value: crossfade, label: Slow fade between photos }
+                - { value: single, label: One photo (the first) }
+          - name: images
+            label: Photos
+            type: image
+            list: true
+            options: { media: photos }
+            description: Pick 1 to 5 wide photos. The first one loads first.
+      - name: contact
+        label: Contact form
+        type: object
+        fields:
+          - { name: intro, label: Message above the form, type: text }
+          - name: method
+            label: How messages are sent
+            type: select
+            description: "'Email with spam check' is recommended. See the guide for setup."
+            options:
+              values:
+                - { value: function, label: Email with spam check (recommended) }
+                - { value: web3forms, label: Web3Forms }
+                - { value: formspree, label: Formspree }
+          - { name: turnstileSiteKey, label: Turnstile site key, type: string, description: From the Cloudflare dashboard > Turnstile. }
+          - { name: web3formsKey, label: Web3Forms access key, type: string }
+          - { name: formspreeId, label: Formspree form ID, type: string }
+          - { name: shootTypes, label: Choices in the "What are you planning?" menu, type: string, list: true }
+      - name: clients
+        label: Private client galleries
+        type: object
+        fields:
+          - name: enabled
+            label: Turn on private client galleries
+            type: boolean
+            description: Only turn this on AFTER you have set up the password protection in the guide.
+
+  - name: galleries
+    label: Galleries
+    type: collection
+    path: content/galleries
+    format: yaml
+    view:
+      fields: [title, order]
+      primary: title
+    fields:
+      - { name: title, label: Gallery name, type: string, required: true }
+      - { name: description, label: Description, type: text, description: A sentence or two shown at the top of the gallery. }
+      - { name: order, label: Position, type: number, description: "1 shows first, 2 second, and so on." }
+      - { name: cover, label: Cover photo, type: image, options: { media: photos }, description: The picture shown on the portfolio page. If blank, the first photo is used. }
+      - name: layout
+        label: Layout for this gallery (optional)
+        type: select
+        options:
+          values:
+            - { value: justified, label: Rows }
+            - { value: masonry, label: Columns }
+            - { value: single, label: One big photo at a time }
+      - name: photos
+        label: Photos
+        type: object
+        list: true
+        description: Drag to reorder. Photos appear in this order.
+        fields:
+          - { name: file, label: Photo, type: image, options: { media: photos }, required: true }
+          - { name: alt, label: Description for screen readers, type: string, description: "Say what is in the photo, e.g. 'Bride laughing with her bridesmaids'." }
+          - { name: caption, label: Caption (optional), type: string, description: Shown under the photo when it is opened large. }
+
+  - name: client-galleries
+    label: Private client galleries
+    type: collection
+    path: content/clients
+    format: yaml
+    view:
+      fields: [title]
+      primary: title
+    fields:
+      - { name: title, label: Gallery name, type: string, required: true }
+      - { name: description, label: Welcome message, type: text }
+      - { name: note, label: Note under the title, type: string }
+      - name: photos
+        label: Photos
+        type: object
+        list: true
+        fields:
+          - { name: file, label: Photo, type: image, options: { media: client-photos }, required: true }
+          - { name: alt, label: Description for screen readers, type: string }
+          - { name: caption, label: Caption (optional), type: string }
+
+  - name: about
+    label: About page
+    type: file
+    path: content/about.md
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Page title, type: string }
+      - { name: photo, label: Your photo, type: image, options: { media: photos } }
+      - { name: photoAlt, label: Photo description, type: string }
+      - { name: body, label: Your story, type: rich-text }
+
+  - name: services
+    label: Services and prices
+    type: file
+    path: content/services.md
+    format: yaml-frontmatter
+    fields:
+      - { name: title, label: Page title, type: string }
+      - { name: body, label: Services and prices, type: rich-text }

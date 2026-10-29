@@ -1,0 +1,16 @@
+{
+  "name": "jonathan-polach-photography",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "marked": "^18.1.2",
+    "sharp": "^0.35.5",
+    "yaml": "^2.9.1"
+  }
+}
