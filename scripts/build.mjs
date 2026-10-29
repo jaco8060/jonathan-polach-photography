@@ -6,7 +6,7 @@ import {
   ROOT, ContentError, warnings, warn, loadSite, indexPhotos, findPhoto, loadGalleries, readMarkdown,
 } from './content.mjs';
 import { processImage, mapLimit } from './images.mjs';
-import { esc, picture, galleryHtml, head, header, footer, hero, tiles, stories, strip } from './render.mjs';
+import { esc, picture, fill, galleryHtml, head, header, footer, hero, intro, work, wall, moments, quote, close, pageHead } from './render.mjs';
 
 const DIST = path.join(ROOT, 'dist');
 // Animation library (deferred, so it never blocks the first paint). Pinned version + integrity hash.
@@ -45,87 +45,112 @@ async function build() {
   const services = await readMarkdown(p('content/services.md'));
 
   // ---- images
+  // Every photograph the page needs is prepared once, whichever section asks for it.
   const pub = { outDir: path.join(DIST, 'img'), urlBase: '/img' };
   const priv = { outDir: path.join(DIST, 'clients/img'), urlBase: '/clients/img' };
-  const heroSrcs = site.hero.images.map((f) => {
-    const src = findPhoto(photos, f);
-    if (!src) warn(`Site settings: the hero photo "${f}" was not found in content/photos, so it was skipped.`);
-    return src;
-  }).filter(Boolean);
-  if (!heroSrcs.length && galleries[0]) heroSrcs.push(galleries[0].cover);
-  const aboutSrc = about?.meta.photo ? findPhoto(photos, about.meta.photo) : null;
-  if (about?.meta.photo && !aboutSrc) warn(`About page: the photo "${about.meta.photo}" was not found in content/photos, so it was skipped.`);
-
-  const jobs = [];
-  const add = (src, opts) => { const job = { src, opts }; jobs.push(job); return job; };
-  const heroJobs = heroSrcs.map((s) => add(s, pub));
-  const aboutJob = aboutSrc && add(aboutSrc, pub);
+  const jobs = new Map();
+  const job = (src, opts = pub) => { const k = src + '|' + opts.urlBase; if (!jobs.has(k)) jobs.set(k, { src, opts }); return jobs.get(k); };
+  const refJob = (ref, where) => {
+    if (!ref) return null;
+    const src = findPhoto(photos, ref);
+    if (!src) { warn(where + ': the photo "' + ref + '" was not found in content/photos, so it was skipped.'); return null; }
+    return job(src);
+  };
   for (const g of [...galleries, ...clients]) {
     const opts = clients.includes(g) ? priv : pub;
-    g.cover = add(g.cover, opts);
-    for (const ph of g.photos) ph.job = add(ph.src, opts);
+    g.coverJob = job(g.cover, opts);
+    for (const ph of g.photos) ph.job = job(ph.src, opts);
   }
-  console.log(`  Preparing ${new Set(jobs.map((j) => j.src)).size} photos (this is the slow part)...`);
-  await mapLimit(jobs, 3, async (j) => { j.meta = await processImage(j.src, j.opts); });
+  const notes = new Map(); // what the owner wrote about a photo, found by file
+  for (const g of galleries) for (const ph of g.photos) if (!notes.has(ph.src)) notes.set(ph.src, { alt: ph.alt, caption: ph.caption });
+
+  const printJobs = site.hero.images.slice(0, 3).map((f) => {
+    const j = refJob(f, 'Site settings (home page photos)');
+    return j && { job: j, ...(notes.get(j.src) ?? {}) };
+  });
+  const aboutJob = about?.meta.photo ? refJob(about.meta.photo, 'About page') : null;
+  const h = site.home;
+  const momentJobs = h.moments.map((m) => ({ ...m, job: refJob(m.photo, 'Site settings (day moments)') }));
+  const quoteJob = h.testimonial?.photo ? refJob(h.testimonial.photo, 'Site settings (testimonial)') : null;
+
+  const publicPhotos = galleries.flatMap((g) => g.photos.map((ph) => ({ job: ph.job, alt: ph.alt, caption: ph.caption })));
+  // spread picks across everything the owner has, so the page never shows one gallery's mood only
+  const pick = (n, offset = 0) => {
+    if (!publicPhotos.length) return [];
+    const take = Math.min(n, publicPhotos.length);
+    return Array.from({ length: take }, (_, i) => publicPhotos[(Math.floor(i * publicPhotos.length / take) + offset) % publicPhotos.length]);
+  };
+  const wallPicks = pick(8);
+  const stripPicks = pick(3, 1);
+  const footerPick = publicPhotos.at(-1) ?? null;
+  const quotePick = quoteJob ? { job: quoteJob } : pick(1, 2)[0];
+  const portraitPick = aboutJob ? { job: aboutJob } : pick(1, 3)[0];
+  for (const j of [...printJobs, ...momentJobs].map((x) => x && x.job)) if (j) jobs.set(j.src + '|' + j.opts.urlBase, j);
+
+  console.log('  Preparing ' + new Set([...jobs.values()].map((j) => j.src)).size + ' photos (this is the slow part)...');
+  await mapLimit([...jobs.values()], 3, async (j) => { j.meta = await processImage(j.src, j.opts); });
 
   // ---- pages
   const layoutHtml = await fs.readFile(p('src/layout.html'), 'utf8');
   const nav = [['Portfolio', '/portfolio'], ...(about ? [['About', '/about']] : []),
     ...(services ? [['Services', '/services']] : []), ['Contact', '/contact']];
-  const ctx = { site, assets, nav };
+  const ctx = { site, assets, nav, footerPhoto: footerPick?.job.meta };
   const urls = [];
-  const fill = (tpl, map) => tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => map[k] ?? '');
+  const fillTpl = (tpl, map) => tpl.replace(/\{\{(\w+)\}\}/g, (_, k) => map[k] ?? '');
+  const metaOf = (x) => x?.job?.meta;
+  const withMeta = (xs) => xs.filter((x) => x?.job?.meta).map((x) => ({ meta: x.job.meta, alt: x.alt || '', caption: x.caption || '' }));
 
   async function writePage(file, page, main, { scripts = '' } = {}) {
-    const html = fill(layoutHtml, {
-      head: head(ctx, page), header: header(ctx, page.nav ?? page.path, page.home), main, footer: footer(ctx),
+    const html = fillTpl(layoutHtml, {
+      head: head(ctx, page), header: header(ctx, page.nav ?? page.path), main, footer: footer(ctx),
       bodyClass: page.bodyClass || '',
-      scripts: `${GSAP_TAGS}<script src="${assets['site.js']}" defer></script>${scripts}`,
+      scripts: GSAP_TAGS + '<script src="' + assets['site.js'] + '" defer></script>' + scripts,
     });
     const out = path.join(DIST, file);
     await fs.mkdir(path.dirname(out), { recursive: true });
     await fs.writeFile(out, html);
     if (!page.noindex && file !== '404.html') urls.push(page.path);
   }
-  const heading = (title, text) => `<section class="page-head"><h1>${esc(title)}</h1>${text ? `<p>${esc(text)}</p>` : ''}</section>`;
-  const ogImage = (g) => g && `${g.meta.base}-${[...g.meta.widths].reverse().find((w) => w <= 1200) ?? g.meta.widths[0]}.jpg`;
-  const heroOg = ogImage(heroJobs[0]);
+  const ogImage = (m) => m && m.base + '-' + ([...m.widths].reverse().find((w) => w <= 1200) ?? m.widths[0]) + '.jpg';
+  const heroOg = ogImage(metaOf(printJobs[0]) ?? galleries[0]?.coverJob.meta);
+  const stagger = (html) => html.replace(/<(h2|p|table|ul|ol)>/g, '<$1 class="reveal">'); // each block of text arrives on its own
+  const closeHtml = close(ctx, stripPicks.map((x) => x.job.meta), metaOf(portraitPick));
 
   // home
-  const cardItems = galleries.map((g) => ({ href: `/portfolio/${g.slug}/`, title: g.title, description: g.description, meta: g.cover.meta, n: g.photos.length }));
-  const pool = galleries.flatMap((g) => g.photos.map((ph) => ({ meta: ph.job.meta, alt: ph.alt || ph.caption })));
-  const portrait = pool.filter((x) => x.meta.height > x.meta.width);
-  const introPics = [portrait[0] ?? pool[0], portrait[1] ?? pool[1]].filter(Boolean);
-  const stripPics = pool.length > 4 ? Array.from({ length: Math.min(8, pool.length) }, (_, i) => pool[Math.floor(i * pool.length / Math.min(8, pool.length))]) : [];
-  const ctaBg = (heroJobs[1] ?? heroJobs[0])?.meta;
-  const cta = `<section class="cta"${ctaBg ? ' data-bg' : ''}>${ctaBg ? picture(ctaBg, { alt: '', sizes: '100vw' }) : ''}<div class="cta__inner reveal"><p class="eyebrow">Let's talk</p><h2>Planning something? I'd love to hear about it.</h2><a class="btn btn--light" href="/contact">Get in touch</a></div></section>`;
-  const h = site.home;
-  const homeMain = hero(ctx, heroJobs.map((j) => j.meta)) + '<span id="start"></span>' +
-    (h.intro ? `<section class="intro"><div class="intro__text reveal"><p class="eyebrow">Hello</p><p class="intro__lead">${esc(h.intro)}</p>${about ? '<a class="link" href="/about">More about me</a>' : ''}</div>` +
-      (introPics.length ? `<div class="intro__pics reveal">${introPics.map((x, i) => `<div class="intro__pic intro__pic--${i + 1}">${picture(x.meta, { alt: x.alt, sizes: '(min-width: 900px) 25vw, 60vw' })}</div>`).join('')}</div>` : '') + '</section>' : '') +
-    (cardItems.length ? `<section class="section"><p class="eyebrow">Selected work</p><h2 class="section__title">Recent stories</h2>${stories(cardItems.slice(0, 4))}</section>` : '') +
-    (stripPics.length ? strip(stripPics) : '') +
-    (h.process.length ? `<section class="process"><h2 class="section__title">How it works</h2><ol>${h.process.map((s, i) => `<li class="reveal"><span class="eyebrow">${String(i + 1).padStart(2, '0')}</span><h3>${esc(s.title)}</h3><p>${esc(s.text || '')}</p></li>`).join('')}</ol></section>` : '') +
-    (h.testimonials.length ? `<section class="quotes">${h.testimonials.map((t) => `<figure class="reveal"><blockquote>${esc(t.quote)}</blockquote>${t.name ? `<figcaption>${esc(t.name)}</figcaption>` : ''}</figure>`).join('')}</section>` : '') +
-    cta;
+  const items = galleries.map((g) => ({ href: '/portfolio/' + g.slug + '/', title: g.title, meta: g.coverJob.meta, n: g.photos.length }));
+  const prints = {
+    tall: printJobs[0] && { meta: printJobs[0].job.meta, alt: printJobs[0].alt, caption: printJobs[0].caption },
+    wide: printJobs[1] && { meta: printJobs[1].job.meta, alt: printJobs[1].alt, caption: printJobs[1].caption },
+    sq: printJobs[2] && { meta: printJobs[2].job.meta, alt: printJobs[2].alt, caption: '' },
+  };
+  if (!prints.tall && wallPicks[0]) prints.tall = { meta: wallPicks[0].job.meta, alt: wallPicks[0].alt, caption: wallPicks[0].caption };
+  const dayPool = pick(Math.max(h.moments.length, 1), 1);
+  const momentItems = momentJobs.map((m, i) => ({ ...m, meta: m.job?.meta ?? dayPool[i % Math.max(dayPool.length, 1)]?.job.meta })).filter((m) => m.meta);
+  const homeMain = hero(ctx, prints) +
+    (h.title || h.facts.length ? intro(h) : '') +
+    (items.length ? work(items) : '') +
+    (wallPicks.length ? wall(withMeta(wallPicks)) : '') +
+    moments(h, momentItems) +
+    quote(h.testimonial, metaOf(quotePick)) +
+    closeHtml;
   await writePage('index.html', { home: true, path: '/', image: heroOg, nav: '/' }, homeMain);
 
   // portfolio index
   await writePage('portfolio/index.html', { title: 'Portfolio', path: '/portfolio', image: heroOg },
-    heading('Portfolio', 'Choose a gallery.') + (galleries.length ? tiles(cardItems) : '<p class="empty">Galleries are coming soon.</p>'));
+    items.length ? work(items, { level: 'h1', title: 'Portfolio', blurb: 'Choose a gallery to see the whole story.', sectionClass: 'work--page' }) + closeHtml : pageHead('Portfolio', 'Galleries are coming soon.'));
 
   // gallery pages (public + private share one template)
-  const lightbox = `<script type="module" src="${assets['lightbox.js']}"></script>`;
+  const lightbox = '<script type="module" src="' + assets['lightbox.js'] + '"></script>';
   async function galleryPage(g, list, i, base, isClient) {
     const layout = g.layout ?? site.layout;
     const next = list[(i + 1) % list.length];
-    const body = heading(g.title, g.description) + (g.note ? `<p class="note">${esc(g.note)}</p>` : '') +
+    const body = pageHead(g.title, g.description) + (g.note ? '<p class="note">' + esc(g.note) + '</p>' : '') +
       galleryHtml(g, layout, g.photos.map((ph) => ({ meta: ph.job.meta, alt: ph.alt, caption: ph.caption }))) +
-      (isClient ? '' : `<nav class="gallery-nav"><a href="/portfolio">&larr; All galleries</a>` +
-        (list.length > 1 ? `<a href="${base}/${next.slug}/">Next: ${esc(next.title)} &rarr;</a>` : '') + `</nav>` + cta);
-    await writePage(`${base.slice(1)}/${g.slug}/index.html`, {
-      title: g.title, description: g.description || `${g.title} by ${site.name}`, path: `${base}/${g.slug}/`,
-      image: ogImage(g.cover), noindex: isClient, nav: '/portfolio',
+      (isClient ? '' : '<nav class="gallery-nav"><a href="/portfolio">&larr; All galleries</a>' +
+        (list.length > 1 ? '<a href="' + base + '/' + next.slug + '/">Next: ' + esc(next.title) + ' &rarr;</a>' : '') + '</nav>' + closeHtml);
+    await writePage(base.slice(1) + '/' + g.slug + '/index.html', {
+      title: g.title, description: g.description || g.title + ' by ' + site.name, path: base + '/' + g.slug + '/',
+      image: ogImage(g.coverJob.meta), noindex: isClient, nav: '/portfolio',
     }, body, { scripts: lightbox });
   }
   for (const [i, g] of galleries.entries()) await galleryPage(g, galleries, i, '/portfolio', false);
@@ -133,13 +158,13 @@ async function build() {
 
   // about / services
   if (about) {
-    const photo = aboutJob ? `<div class="about__photo">${picture(aboutJob.meta, { alt: about.meta.photoAlt || `Portrait of ${site.name}`, sizes: '(min-width: 900px) 40vw, 100vw' })}</div>` : '';
-    await writePage('about.html', { title: about.meta.title || 'About', path: '/about', description: about.meta.description, image: aboutJob && ogImage(aboutJob) },
-      `<section class="about">${photo}<div class="prose"><h1>${esc(about.meta.title || 'About')}</h1>${about.html}</div></section>${cta}`);
+    const photo = aboutJob ? '<div class="about__photo wipe">' + fill(aboutJob.meta, { ratio: '4/5', sizes: '(min-width: 900px) 40vw, 100vw', alt: about.meta.photoAlt || 'Portrait of ' + site.name }) + '</div>' : '';
+    await writePage('about.html', { title: about.meta.title || 'About', path: '/about', description: about.meta.description, image: aboutJob && ogImage(aboutJob.meta) },
+      '<section class="about">' + photo + '<div class="prose"><h1 class="reveal">' + esc(about.meta.title || 'About') + '</h1>' + stagger(about.html) + '</div></section>' + closeHtml);
   }
   if (services) {
     await writePage('services.html', { title: services.meta.title || 'Services', path: '/services', description: services.meta.description, image: heroOg },
-      `<section class="prose prose--wide"><h1>${esc(services.meta.title || 'Services')}</h1>${services.html}</section>${cta}`);
+      '<section class="prose prose--wide"><h1 class="reveal">' + esc(services.meta.title || 'Services') + '</h1>' + stagger(services.html) + '</section>' + closeHtml);
   }
 
   // contact
@@ -156,17 +181,17 @@ async function build() {
   const contactTpl = await fs.readFile(p('src/contact.html'), 'utf8');
   const key = c.method === 'web3forms' ? c.web3formsKey : c.method === 'formspree' ? c.formspreeId : '';
   await writePage('contact.html', { title: 'Contact', path: '/contact', image: heroOg },
-    fill(contactTpl, {
+    fillTpl(contactTpl, {
       intro: esc(c.intro || 'Tell me a little about your plans and I will reply within a couple of days.'),
       method: needsKey ? c.method : 'mailto', key: esc(key), email: esc(site.email), turnstile, details,
       shootOptions: c.shootTypes.map((t) => `<option>${esc(t)}</option>`).join(''),
-    }),
+    }) + close(ctx, stripPicks.map((x) => x.job.meta), null, { band: false }),
     { scripts: `<script src="${assets['contact.js']}" defer></script>` +
       (turnstile ? '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>' : '') });
 
   // 404
   await writePage('404.html', { title: 'Page not found', path: '/404', noindex: true },
-    `<section class="page-head"><h1>That page isn't here</h1><p>It may have moved. Try the <a href="/portfolio">portfolio</a> or <a href="/">home page</a>.</p></section>`);
+    `pageHead("That page isn't here", 'It may have moved. Try the portfolio or the home page.')`);
 
   // robots + sitemap
   const abs = (u) => (site.url || '') + u;

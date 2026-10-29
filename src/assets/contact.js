@@ -44,3 +44,8 @@ form.addEventListener('submit', async (e) => {
     button.disabled = false;
   }
 });
+
+// The message box starts small and grows as the visitor types.
+const box = form.querySelector('textarea');
+const grow = () => { box.style.height = 'auto'; box.style.height = box.scrollHeight + 'px'; };
+box.addEventListener('input', grow);

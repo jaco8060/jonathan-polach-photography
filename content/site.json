@@ -1,7 +1,7 @@
 {
   "name": "Jonathan Polach Photography",
-  "tagline": "Weddings and celebrations, photographed honestly.",
-  "description": "Wedding and event photographer. Natural, unhurried photographs of the people and moments that matter.",
+  "tagline": "Weddings, honestly photographed",
+  "description": "Unhurried, warm photographs of the people and moments that matter. Based wherever your day is.",
   "url": "",
   "email": "hello@example.com",
   "phone": "",
@@ -17,11 +17,10 @@
   "layout": "justified",
   "gutter": "normal",
   "hero": {
-    "mode": "crossfade",
     "images": [
-      "sample-01.jpg",
+      "sample-02.jpg",
       "sample-04.jpg",
-      "sample-03.jpg"
+      "sample-07.jpg"
     ]
   },
   "contact": {
@@ -42,26 +41,86 @@
     "enabled": false
   },
   "home": {
-    "intro": "I photograph weddings and celebrations the way they actually feel: unhurried, warm, and a little bit wild. No stiff poses, just the people you love and the moments you'll want back.",
-    "process": [
+    "title": "Days as they were",
+    "intro": "I photograph weddings and celebrations the way they actually feel: unhurried, warm, and a little bit wild. No stiff poses, just the people you love.",
+    "facts": [
       {
-        "title": "Say hello",
-        "text": "Tell me your date and what you have in mind. I'll reply within a couple of days."
+        "value": "Four weeks",
+        "label": "until your full gallery arrives"
       },
       {
-        "title": "Plan together",
-        "text": "We'll talk through the day, the light, and the people who matter most to you."
+        "value": "Up to ten hours",
+        "label": "of coverage on a full day"
       },
       {
-        "title": "Relax and enjoy",
-        "text": "I stay close and out of the way. Your full gallery arrives within four weeks."
+        "value": "From $900",
+        "label": "for elopements and small days"
       }
     ],
-    "testimonials": [
+    "momentsTitle": "The day, hour by hour",
+    "coverage": [
+      4,
+      6,
+      8,
+      10
+    ],
+    "moments": [
       {
-        "quote": "We forgot he was even there, and somehow he caught every single moment we'd have missed.",
-        "name": "Sample client, edit me"
+        "title": "Getting ready",
+        "at": 0,
+        "text": "Quiet, close, and often the funniest hour of the day.",
+        "photo": "sample-06.jpg"
+      },
+      {
+        "title": "First look",
+        "at": 1.5,
+        "text": "Just the two of you before everyone arrives.",
+        "photo": "sample-03.jpg"
+      },
+      {
+        "title": "The ceremony",
+        "at": 3,
+        "text": "I stay at the edges and let it happen.",
+        "photo": "sample-02.jpg"
+      },
+      {
+        "title": "Family and friends",
+        "at": 4,
+        "text": "A handful of group photos, done quickly so you can get to the party.",
+        "photo": "sample-08.jpg"
+      },
+      {
+        "title": "Golden hour",
+        "at": 5.5,
+        "text": "Ten unhurried minutes with the best light of the day.",
+        "photo": "sample-05.jpg"
+      },
+      {
+        "title": "Dinner and toasts",
+        "at": 6.5,
+        "text": "The speeches, the faces in the crowd, the laughter.",
+        "photo": "sample-09.jpg"
+      },
+      {
+        "title": "First dance",
+        "at": 8,
+        "text": "The moment everyone stops and watches.",
+        "photo": "sample-04.jpg"
+      },
+      {
+        "title": "The dance floor",
+        "at": 9.5,
+        "text": "Loose, loud and full of joy.",
+        "photo": "sample-10.jpg"
       }
-    ]
+    ],
+    "testimonial": {
+      "quote": "We forgot he was even there, and somehow he caught every moment we would have missed.",
+      "name": "Sample client",
+      "role": "edit me in Site settings",
+      "photo": ""
+    },
+    "closing": "Your day only happens once.",
+    "closingLink": "Tell me about it"
   }
 }

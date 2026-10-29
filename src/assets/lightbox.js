@@ -22,7 +22,7 @@ lightbox.on('uiRegister', () => {
     isButton: false,
     appendTo: 'root',
     onInit: (el, pswp) => {
-      el.style.cssText = 'position:absolute;left:0;right:0;bottom:0;padding:.9rem 1rem;text-align:center;color:#eee;font:1rem/1.4 system-ui,sans-serif;background:linear-gradient(transparent,rgba(0,0,0,.55));pointer-events:none';
+      el.style.cssText = 'position:absolute;left:0;right:0;bottom:0;padding:.9rem 1rem;text-align:center;color:#eee;font:1rem/1.4 system-ui,sans-serif;background:rgba(0,0,0,.5);pointer-events:none';
       pswp.on('change', () => {
         el.textContent = pswp.currSlide.data.element?.dataset.caption || '';
         el.hidden = !el.textContent;

@@ -52,15 +52,15 @@ export async function readMarkdown(file) {
 
 // ---------- site settings ----------
 export const PRESETS = {
-  'light-gallery':  { background: '#fafaf8', text: '#1c1c1a', accent: '#7a5c2e' },
-  'dark-gallery':   { background: '#111111', text: '#f2f0eb', accent: '#d8b36a' },
-  'warm-editorial': { background: '#f6f1ea', text: '#2b2420', accent: '#8c4a32' },
+  'warm-editorial': { background: '#dedad3', text: '#0a0a0a', accent: '#256f82' }, // putty, black, teal
+  'light-gallery':  { background: '#f3f2ef', text: '#141414', accent: '#1f6a80' },
+  'dark-gallery':   { background: '#121110', text: '#efece6', accent: '#5fb3c4' },
 };
 
 export const FONTS = {
   'elegant-serif': {
-    heading: "'Cormorant Garamond', Georgia, serif", body: "'Jost', system-ui, sans-serif",
-    url: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&display=swap',
+    heading: "'Newsreader', Georgia, serif", body: "'Newsreader', Georgia, serif",
+    url: 'https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap',
   },
   'modern-sans': {
     heading: "'Manrope', system-ui, sans-serif", body: "'Manrope', system-ui, sans-serif",
@@ -104,7 +104,7 @@ export async function loadSite() {
     if (v && !isHex(v)) warn(`Site settings: the ${key} color "${v}" is not a valid color (use a code like #8c4a32). Using the preset color.`);
     colors[key] = isHex(v) ? v.trim() : preset[key];
   }
-  if (contrast(colors.accent, colors.background) < 4.5) {
+  if (contrast(colors.accent, colors.background) < 3) {
     warn(`Site settings: the accent color ${colors.accent} is too faint to read on ${colors.background}. Using the preset accent.`);
     colors.accent = preset.accent;
   }
@@ -126,7 +126,7 @@ export async function loadSite() {
     fonts: pick(raw.fonts, Object.keys(FONTS), 'elegant-serif', 'font choice'),
     layout: pick(raw.layout, LAYOUTS, 'justified', 'gallery layout'),
     gutter: pick(raw.gutter, Object.keys(GUTTERS), 'normal', 'gutter size'),
-    hero: { mode: raw.hero?.mode === 'single' ? 'single' : 'crossfade', images: raw.hero?.images ?? [] },
+    hero: { images: raw.hero?.images ?? [] },
     contact: {
       intro: contact.intro || '',
       method: pick(contact.method, ['function', 'web3forms', 'formspree'], 'function', 'contact method'),
@@ -136,9 +136,15 @@ export async function loadSite() {
       shootTypes: contact.shootTypes?.length ? contact.shootTypes : ['Wedding', 'Engagement', 'Event', 'Other'],
     },
     home: {
+      title: raw.home?.title || '',
       intro: raw.home?.intro || raw.description || '',
-      process: (raw.home?.process ?? []).filter((s) => s?.title),
-      testimonials: (raw.home?.testimonials ?? []).filter((t) => t?.quote),
+      facts: (raw.home?.facts ?? []).filter((f) => f?.value).slice(0, 4),
+      momentsTitle: raw.home?.momentsTitle || 'The day, hour by hour',
+      moments: (raw.home?.moments ?? []).filter((m) => m?.title),
+      coverage: (raw.home?.coverage ?? [4, 6, 8, 10]).map(Number).filter((n) => n > 0),
+      testimonial: raw.home?.testimonial?.quote ? raw.home.testimonial : null,
+      closing: raw.home?.closing || 'Your day only happens once.',
+      closingLink: raw.home?.closingLink || 'Tell me about it',
     },
     clientsEnabled: raw.clients?.enabled === true,
   };

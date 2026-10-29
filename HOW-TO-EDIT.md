@@ -30,14 +30,27 @@ Removing a photo from a gallery doesn't delete the file. To delete the file too,
 
 Open the gallery, change the **Caption** or **Description for screen readers** next to the photo, and click **Save**.
 
-## 4. Change the home page photos, colors, fonts or layout
+## 4. Change the home page
 
 1. Click **Site settings**.
-2. **Home page photos:** pick 1 to 5 wide photos. Choose "Slow fade" or "One photo".
-3. **Look:** choose Warm editorial, Light gallery or Dark gallery.
-4. **Custom colors (optional):** type a code like `#8c4a32` into Accent to change the highlight color. Leave a box empty to use the Look you chose. If a color is hard to read, the site quietly uses the Look's color instead and the build tells you.
-5. **Fonts**, **Gallery layout** and **Space between photos** are drop-down menus.
-6. Click **Save**.
+2. **Home page photos:** pick three. The first is shown large and tall (an upright photo works best), the second wide, the third small and square.
+3. **Tagline:** the big line next to the photos. Keep it under 36 characters or it will wrap onto three lines.
+4. **Home page text** holds everything below the photos:
+   - **Heading** and **Short note** (a few words and two or three sentences).
+   - **Three facts**, shown as a row (for example "Four weeks / until your full gallery arrives").
+   - **Moments of a wedding day:** each one has a name, a photo, and "hours after the start of your coverage". Visitors can tap 4, 6, 8 or 10 hours to see which moments that much time would cover. Put them in time order.
+   - **One client quote:** use a real one, about 20 words.
+   - **Closing sentence** and the **words that link to the contact page**.
+5. Click **Save**.
+
+The gallery wall, the photo strips and the big footer photo are picked automatically from the photos in your galleries, so a new gallery freshens the whole home page.
+
+## 4b. Change colors, fonts or layout
+
+1. **Site settings** → **Look:** choose Warm editorial (putty, black and teal), Light gallery or Dark gallery.
+2. **Custom colors (optional):** type a code like `#256f82` into Accent to change the button color. Leave a box empty to use the Look you chose. If a color would be hard to read, the site quietly uses the Look's color instead and the build tells you.
+3. **Fonts**, **Gallery layout** (for the photos inside each gallery) and **Space between photos** are drop-down menus.
+4. Click **Save**.
 
 ## 5. Edit About, Services and your contact details
 
@@ -142,7 +155,8 @@ You normally use the editor, but these are the files it saves (in the GitHub rep
   "fonts": "elegant-serif",
   "layout": "justified",
   "gutter": "normal",
-  "hero": { "mode": "crossfade", "images": ["sample-01.jpg", "sample-04.jpg"] },
+  "hero": { "images": ["sample-02.jpg", "sample-04.jpg", "sample-07.jpg"] },
+  "home": { "title": "Days as they were", "facts": [{ "value": "Four weeks", "label": "until your gallery arrives" }] },
   "contact": { "method": "function", "turnstileSiteKey": "" },
   "clients": { "enabled": false }
 }

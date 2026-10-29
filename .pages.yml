@@ -19,7 +19,7 @@ content:
     format: json
     fields:
       - { name: name, label: Business name, type: string }
-      - { name: tagline, label: Tagline, type: string, description: Shown over the home page photo. }
+      - { name: tagline, label: Tagline, type: string, description: "The big line on the home page. Keep it under 36 characters, like 'Weddings, honestly photographed'." }
       - { name: description, label: Short description, type: text, description: What Google shows under your site name. One or two sentences. }
       - { name: url, label: Website address, type: string, description: "Leave blank until you have your own domain. Then type it in full, like https://www.yourname.com" }
       - { name: email, label: Email address, type: string, description: Shown on the contact page and in the footer. }
@@ -30,21 +30,40 @@ content:
         label: Home page text
         type: object
         fields:
-          - { name: intro, label: Introduction, type: text, description: A short, warm paragraph shown under the big photo. If blank, your short description is used. }
-          - name: process
-            label: "How it works (3 steps work best)"
+          - { name: title, label: Heading under the photos, type: string, description: "Two to four words, like 'Days as they were'." }
+          - { name: intro, label: Short note beside the heading, type: text, description: Two or three short sentences. If blank, your short description is used. }
+          - name: facts
+            label: Three facts (shown as a row)
             type: object
             list: true
             fields:
-              - { name: title, label: Step title, type: string }
-              - { name: text, label: Step description, type: text }
-          - name: testimonials
-            label: Client testimonials
+              - { name: value, label: The fact, type: string, description: "Short, like 'Four weeks' or 'From $900'." }
+              - { name: label, label: What it means, type: string }
+          - { name: momentsTitle, label: Heading for the day-by-day row, type: string }
+          - name: coverage
+            label: Hours of coverage visitors can try
+            type: number
+            list: true
+            description: "For example 4, 6, 8, 10. Visitors tap one to see which moments of the day it would cover."
+          - name: moments
+            label: Moments of a wedding day (in time order)
             type: object
             list: true
             fields:
-              - { name: quote, label: What they said, type: text }
+              - { name: title, label: Moment, type: string, description: "For example 'Getting ready'." }
+              - { name: at, label: Hours after the start of your coverage, type: number, description: "0 = the very start, 3 = three hours in, 5.5 = five and a half hours in." }
+              - { name: text, label: One or two sentences, type: text }
+              - { name: photo, label: Photo, type: image, options: { media: photos } }
+          - name: testimonial
+            label: One client quote
+            type: object
+            fields:
+              - { name: quote, label: What they said, type: text, description: "Keep it to about 20 words. Only use a real quote." }
               - { name: name, label: Their name, type: string }
+              - { name: role, label: Their role, type: string, description: "For example 'bride' or 'wedding at Fairview Farm'." }
+              - { name: photo, label: Photo behind the quote, type: image, options: { media: photos }, description: "A photo with calm, quiet space in its lower half works best. Leave blank to pick one automatically." }
+          - { name: closing, label: Closing sentence, type: string, description: "The sentence before the link, near the bottom of the page." }
+          - { name: closingLink, label: Words that link to the contact page, type: string, description: "For example 'Tell me about it'." }
       - name: preset
         label: Look
         type: select
@@ -91,19 +110,12 @@ content:
         label: Home page photos
         type: object
         fields:
-          - name: mode
-            label: Style
-            type: select
-            options:
-              values:
-                - { value: crossfade, label: Slow fade between photos }
-                - { value: single, label: One photo (the first) }
           - name: images
-            label: Photos
+            label: Three photos at the top
             type: image
             list: true
             options: { media: photos }
-            description: Pick 1 to 5 wide photos. The first one loads first.
+            description: "Pick three. The first is shown large and tall (an upright photo works best), the second wide, the third small and square."
       - name: contact
         label: Contact form
         type: object
